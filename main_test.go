@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -31,8 +33,12 @@ func setupTestSynq() {
 
 func setupTestCalls() (calls []ApiCall) {
 	cleanupTestCalls()
-	calls = append(calls, ApiCall{VideoId: "123"})
-	calls = append(calls, ApiCall{VideoId: "456"})
+	c := ApiCall{VideoId: "123", Type: "details"}
+	c.Save()
+	calls = append(calls, c)
+	c = ApiCall{VideoId: "456", Type: "details"}
+	c.Save()
+	calls = append(calls, c)
 	return calls
 }
 
@@ -53,12 +59,16 @@ func testLaunchRouter() string {
 
 func TestSave(t *testing.T) {
 	assert := setupTest(t)
-	call := ApiCall{VideoId: "123"}
+	call := ApiCall{VideoId: "123", Called: time.Now()}
 	err := call.Save()
 	assert.Nil(err)
-	assert.True(call.Id > 0)
-	c := ApiCall{}
-	db.Select(&c, "select * from api_calls where id = $1", call.Id)
+	calls := []ApiCall{}
+	e := db.Select(&calls, "select * from api_calls where true")
+	assert.Nil(e)
+	assert.Len(calls, 1)
+	assert.Equal(call.VideoId, calls[0].VideoId)
+	layout := "2006-01-02 03:04:05"
+	assert.Equal(call.Called.UTC().Format(layout), calls[0].Called.UTC().Format(layout))
 }
 
 func TestCall(t *testing.T) {
@@ -97,20 +107,31 @@ func TestDetails(t *testing.T) {
 		func(r *httptest.ResponseRecorder) {
 			assert.Equal(400, r.Code)
 			resp := test_helper.ParseJson(r.Body)
-			assert.Equal("", resp["message"])
+			reqs, vals := test_helper.GetReqs()
+			assert.Len(reqs, 1)
+			assert.Len(vals, 1)
+			assert.Equal("failled to make api call : Invalid uuid. Example: '1c0e3ea4529011e6991554a050defa20'.", resp["message"])
 		})
 	sApi.Key = key
+	type Resp struct {
+		ServerStarted time.Time `json:"server_started"`
+		Calls         []ApiCall `json:"calls"`
+		Error         string    `json:"error"`
+	}
 	test_helper.RunSimplePost("/v1/details", `{"video_id" : "`+test_helper.VIDEO_ID+`"}`,
 		func(c *gin.Context) {
 			details(c)
 		},
 		func(r *httptest.ResponseRecorder) {
+			var resp Resp
 			assert.Equal(200, r.Code)
-			resp := test_helper.ParseJson(r.Body)
-			assert.Equal("", resp["message"])
+			bytes, _ := ioutil.ReadAll(r.Body)
+			json.Unmarshal(bytes, resp)
+			assert.Len(resp.Calls, 0)
 			reqs, vals := test_helper.GetReqs()
-			assert.Len(reqs, 1)
-			assert.Len(vals, 1)
+			assert.Equal("/v1/video/details", reqs[1].URL.Path)
+			assert.Len(reqs, 2)
+			assert.Len(vals, 2)
 		})
 
 }
@@ -126,8 +147,7 @@ func TestStatus(t *testing.T) {
 			assert.Equal(200, r.Code)
 			resp := test_helper.ParseJson(r.Body)
 			assert.Equal(serverStarted.Format(time.RFC3339Nano), resp["server_started"])
-			calls := resp["calls"].([]interface{})
-			assert.Len(calls, 0)
+			assert.Nil(resp["calls"])
 		})
 	testCalls := setupTestCalls()
 	test_helper.RunSimpleGet("/v1/status",
@@ -155,10 +175,12 @@ func TestSetupSynq(t *testing.T) {
 func TestSetupRouter(t *testing.T) {
 	assert := assert.New(t)
 	port := testLaunchRouter()
-	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/v1/transcode", port), "", strings.NewReader(""))
+	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/v1/details", port), "", strings.NewReader(""))
 	assert.Nil(err)
-	// should fail on StatusCode 400
 	assert.Equal(400, resp.StatusCode)
+	resp, err = http.Get(fmt.Sprintf("http://localhost:%s/v1/status", port))
+	assert.Nil(err)
+	assert.Equal(200, resp.StatusCode)
 }
 
 func TestParseDbUrl(t *testing.T) {
@@ -170,20 +192,5 @@ func TestParseDbUrl(t *testing.T) {
 	name = parseDatabaseUrl("postgres://user:password@host.com:5432/dbname?sslmode=disable")
 	assert.Equal("host=host.com port=5432 dbname=dbname user=user password=password sslmode=disable", name)
 	name = parseDatabaseUrl(DEFAULT_DB_URL)
-	assert.Equal("host=localhost port=5432 dbname=hydra_test user=hydra password=hydra sslmode=disable", name)
-}
-
-func TestMain(t *testing.T) {
-	assert := setupTest(t)
-	defer func() {
-		// recover from panic if one occured. Set err to nil otherwise.
-		if recover() == nil {
-			assert.Fail("did not raise panic")
-		}
-	}()
-	main()
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/v1/status", DEFAULT_PORT))
-	assert.Nil(err)
-	// should fail on StatusCode 400
-	assert.Equal(200, resp.StatusCode)
+	assert.Equal("host=localhost port=5432 dbname=gosample_test user=gotest password=gotest sslmode=disable", name)
 }

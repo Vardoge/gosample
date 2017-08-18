@@ -100,17 +100,15 @@ func (a *ApiCall) Save() error {
 	var query string
 	args := []interface{}{a.VideoId, a.Called, a.Taken, a.Type, a.Error, a.Video}
 	if a.Exists() {
-		query = `UPDATE hybrik_jobs SET video_id = $1, called = $2, taken = $3, type = $4, error = $5, result = $6 WHERE id = $7`
+		query = `UPDATE api_calls SET video_id = $1, called = $2, taken = $3, type = $4, error = $5, result = $6 WHERE id = $7`
 		args = append(args, a.Id)
 	} else {
-		query = `INSERT INTO api_calls (video_id, called, taken, type, error, result) VALUES ($1, $2, $3, $4, $5, $6)`
+		query = `INSERT INTO api_calls (video_id, called, taken, type, error, result) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
 	}
-	res, err := db.Exec(query, args...)
+	_, err := db.Exec(query, args...)
 	if err != nil {
 		return err
 	}
-	id, _ := res.LastInsertId()
-	a.Id = id
 	return nil
 
 }
@@ -123,6 +121,8 @@ func (a *ApiCall) Call() error {
 		a.Error = err.Error()
 		return err
 	}
+	a.Type = "/v1/video/details"
+	a.VideoId = video.Id
 	a.Taken = time.Since(start)
 	a.Video = video
 	return nil
