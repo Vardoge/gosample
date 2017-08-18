@@ -1,0 +1,45 @@
+version: 2
+notify:
+  webhooks:
+    - url: https://coveralls.io/webhook?repo_token=$COVERALLS_TOKEN
+jobs:
+  build:
+    docker:
+      - image: synqfm/circleci:0.1.5
+      - image: library/postgres:9.6.3
+        environment:
+          POSTGRES_DB: go_test
+          POSTGRES_USER: gotest
+          POSTGRES_PASSWORD: gotest
+    environment:
+      REPO: "gosample"
+      SYNQ_DIR: "/go/src/github.com/SYNQfm"
+    working_directory: /go/src/github.com/SYNQfm/gosample
+    steps:
+      - checkout
+      - run:
+          name: Waiting for Postgres to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              psql -h localhost -U gotest go_test -c "\t" && echo DB Up && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for Postgres && exit 1
+      - run:
+         name: Setup Obaku Database
+         command: |
+             cd sql/environments/test/
+             flyway migrate
+      - run:
+          name: Download Dependencies
+          command: |
+            sudo chown  -R circleci:circleci "${SYNQ_DIR}"
+            go get github.com/kardianos/govendor
+            govendor sync
+      - run:
+          name: Run Golang Tests
+          command: |
+            GOPATH=$GOPATH:"${SYNQ_DIR}"/"${REPO}"/vendor overalls -project=github.com/SYNQfm/"${REPO}" -covermode=count -debug -ignore=.git,vendor,jobs,sql,sample -- -race -v
+            goveralls -coverprofile="${SYNQ_DIR}"/"${REPO}"/overalls.coverprofile -service circle-ci -repotoken "${COVERALLS_TOKEN}"
