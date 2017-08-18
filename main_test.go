@@ -52,6 +52,16 @@ func testLaunchRouter() string {
 }
 
 func TestSave(t *testing.T) {
+	assert := setupTest(t)
+	call := ApiCall{VideoId: "123"}
+	err := call.Save()
+	assert.Nil(err)
+	assert.True(call.Id > 0)
+	c := ApiCall{}
+	db.Select(&c, "select * from api_calls where id = $1", call.Id)
+}
+
+func TestCall(t *testing.T) {
 
 }
 
@@ -60,6 +70,10 @@ func TestGetCalls(t *testing.T) {
 	calls, err := getCalls()
 	assert.Nil(err)
 	assert.Len(calls, 0)
+	testCalls := setupTestCalls()
+	calls, err = getCalls()
+	assert.Nil(err)
+	assert.Len(calls, len(testCalls))
 }
 
 func TestDetails(t *testing.T) {

@@ -8,12 +8,21 @@ This sample app will implement the following
 * Ability to communicate with Synq API
 * DB Connection with setup
 * Tests with mocking
+* Marshalling struct to DB
 * CircleCI setup
 * Uses govendor to vendor/ management
 
 This workspace works!  You can check out the test by running
 
 `circleci build`
+
+If you want to run it locally, you need to setup the test database
+
+```
+createuser -U <postgres admin> -h localhost -P -d gotest
+createdb -U gotest -h localhost gosample_test
+cd sql/environments/test && flyway migrate
+```
 
 ### Setting up Cirlce CI
 
@@ -33,9 +42,16 @@ When you copy the workspace the first thing you should do is setup `circleci` an
 
 * Go to `.circleci/config.yml` and 
   * replace `gotest` with the user you want
-  * replace `go_test` with the database you want
+  * replace `gosample_test` with the database you want
   * replace `gosample` with the name of your workspace
 * Go to `sql/environments/test/flywayconf`
   * change the username/password for your app
   * change the database
 * Change the `sql/migrations/V000__Init.sql` with the table you want
+
+### Tools / Libraries Used
+
+* Golang (duh!)
+* Postgres
+* Govendor `go get -u github.com/kardianos/govendor`
+* CircleCi [cli](https://circleci.com/docs/2.0/local-jobs/)

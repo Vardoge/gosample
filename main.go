@@ -22,17 +22,18 @@ var serverStarted time.Time
 
 const (
 	DEFAULT_PORT   = "41414"
-	DEFAULT_DB_URL = "postgres://gotest:gotest@localhost:5432/go_test?sslmode=disable"
+	DEFAULT_DB_URL = "postgres://gotest:gotest@localhost:5432/gosample_test?sslmode=disable"
 )
 
 type ApiCall struct {
-	Id      int           `db:"id" json:"id"`
-	Type    string        `db:"type" json:"type"`
-	Called  time.Time     `db:"called" json:"called"`
-	VideoId string        `db:"video_id" json:"video_id"`
-	Taken   time.Duration `db:"taken" json:"taken"`
-	Error   string        `db:"error" json:"error"`
-	Video   synq.Video    `db:"result" json:"video"`
+	Id        int64         `db:"id" json:"id"`
+	Type      string        `db:"type" json:"type"`
+	CreatedAt time.Time     `db:"ctime" json:"-"`
+	Called    time.Time     `db:"called" json:"called"`
+	VideoId   string        `db:"video_id" json:"video_id"`
+	Taken     time.Duration `db:"taken" json:"taken"`
+	Error     string        `db:"error" json:"error"`
+	Video     synq.Video    `db:"result" json:"video"`
 }
 
 func init() {
@@ -104,10 +105,12 @@ func (a *ApiCall) Save() error {
 	} else {
 		query = `INSERT INTO api_calls (video_id, called, taken, type, error, result) VALUES ($1, $2, $3, $4, $5, $6)`
 	}
-	_, err := db.Exec(query, args...)
+	res, err := db.Exec(query, args...)
 	if err != nil {
 		return err
 	}
+	id, _ := res.LastInsertId()
+	a.Id = id
 	return nil
 
 }
@@ -169,7 +172,7 @@ func getCalls(ids ...string) (calls []ApiCall, err error) {
 		where = "where video_id = $1"
 		args = append(args, ids[0])
 	} else {
-		where = "where 1"
+		where = "where TRUE"
 	}
 	query := "SELECT * FROM api_calls " + where
 	err = db.Select(&calls, query, args...)
