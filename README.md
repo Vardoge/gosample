@@ -1,5 +1,5 @@
 [![CircleCI](https://circleci.com/gh/SYNQfm/gosample.svg?style=svg&circle-token=a16459f5ae854e258ed0876ab8c4d1fdb14c7679)](https://circleci.com/gh/SYNQfm/gosample)
-[![Coverage Status](https://coveralls.io/repos/github/SYNQfm/gosample/badge.svg?branch=master&1)](https://coveralls.io/github/SYNQfm/gosample?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/SYNQfm/gosample/badge.svg?branch=master)](https://coveralls.io/github/SYNQfm/gosample?branch=master)
 
 ### Go sample app to use for new repos
 
@@ -7,12 +7,11 @@ This is a go sample repo.  This was adapted from [hydra](https://github.com/SYNQ
 
 This sample app will implement the following
 
-* Basic web server handling a /v1/status request
-* Ability to communicate with Synq API
-* DB Connection with setup
+* Basic web server handling /v1/details and /v1/status request
+* This will communicate with Synq API
+* DB Connection with flyway setup
 * Tests with mocking
-* Marshalling struct to DB
-* CircleCI setup
+* CircleCI setup (with coveralls setup)
 * Uses govendor to vendor/ management
 
 This workspace works!  You can check out the test by running
@@ -65,6 +64,7 @@ When you copy the workspace the first thing you should do is setup `circleci` an
   * change the username/password for your app
   * change the database
 * Change the `sql/migrations/V000__Init.sql` with the table you want
+* And of course, change the code as needed, but this workspace starts at 100% code coverage so try to maintain high coverage!
 
 ### Tools / Libraries Used
 
@@ -72,3 +72,4 @@ When you copy the workspace the first thing you should do is setup `circleci` an
 * Postgres
 * Govendor `go get -u github.com/kardianos/govendor`
 * CircleCi [cli](https://circleci.com/docs/2.0/local-jobs/)
+* Coveralls
