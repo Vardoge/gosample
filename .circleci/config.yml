@@ -43,7 +43,7 @@ jobs:
       - run:
           name: Run Golang Tests
           command: |
-            GOPATH=$GOPATH:"${SYNQ_DIR}"/"${REPO}"/vendor overalls -project=github.com/SYNQfm/"${REPO}" -covermode=count -debug -ignore=.git,.github,.circleci,vendor,sql,sample -- -race -v
+            GOPATH=$GOPATH:"${SYNQ_DIR}"/"${REPO}"/vendor overalls -project=github.com/SYNQfm/"${REPO}" -covermode=atomic -debug -ignore=.git,.github,.circleci,vendor,sql,sample -- -race -v
             if [ -z ${COVERALLS_TOKEN} ]; then
               echo "coveralls token isn't set, skipping"
             else
