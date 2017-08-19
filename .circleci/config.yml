@@ -43,9 +43,9 @@ jobs:
       - run:
           name: Run Golang Tests
           command: |
-            GOPATH=$GOPATH:"${SYNQ_DIR}"/"${REPO}"/vendor overalls -project=github.com/SYNQfm/"${REPO}" -covermode=count -debug -ignore=.git,vendor,jobs,sql,sample -- -race -v
+            GOPATH=$GOPATH:"${SYNQ_DIR}"/"${REPO}"/vendor overalls -project=github.com/SYNQfm/"${REPO}" -covermode=count -debug -ignore=.git,.github,.circleci,vendor,sql,sample -- -race -v
             if [ -z ${COVERALLS_TOKEN} ]; then
-              echo "coveralls token isn't set, skipping";
+              echo "coveralls token isn't set, skipping"
             else
-              goveralls -coverprofile="${SYNQ_DIR}"/"${REPO}"/overalls.coverprofile -service circle-ci -repotoken "${COVERALLS_TOKEN}""
+              goveralls -coverprofile="${SYNQ_DIR}"/"${REPO}"/overalls.coverprofile -service circle-ci -repotoken "${COVERALLS_TOKEN}"
             fi
