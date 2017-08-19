@@ -81,6 +81,13 @@ func TestSave(t *testing.T) {
 	e = db.Select(&calls, "select * from api_calls where true")
 	assert.Len(calls, 1)
 	assert.Equal("details", calls[0].Type)
+	// close the database and try to save
+	db.Close()
+	// ensure db is reset after this test
+	defer setupDB()
+	err = call.Save()
+	assert.NotNil(err)
+	assert.Equal("sql: database is closed", err.Error())
 }
 
 func TestCall(t *testing.T) {
@@ -184,6 +191,20 @@ func TestStatus(t *testing.T) {
 			assert.Equal(serverStarted.Format(time.RFC3339Nano), resp["server_started"])
 			calls := resp["calls"].([]interface{})
 			assert.Len(calls, len(testCalls))
+		})
+	db.Close()
+	// ensure db is reset after this test
+	defer setupDB()
+	test_helper.RunSimpleGet("/v1/status",
+		func(c *gin.Context) {
+			status(c)
+		},
+		func(r *httptest.ResponseRecorder) {
+			assert.Equal(200, r.Code)
+			resp := test_helper.ParseJson(r.Body)
+			assert.Equal(serverStarted.Format(time.RFC3339Nano), resp["server_started"])
+			assert.Nil(resp["calls"])
+			assert.Equal("sql: database is closed", resp["error"].(string))
 		})
 }
 
