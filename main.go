@@ -179,22 +179,26 @@ func getCalls(ids ...string) (calls []ApiCall, err error) {
 	return calls, err
 }
 
-func setupRouter() {
+func getPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = DEFAULT_PORT
+	}
+	return port
+}
+
+func setupRouter(port string) {
 	router := gin.Default()
 	v1 := router.Group("/v1")
 	{
 		v1.POST("/details", details)
 		v1.GET("/status", status)
 	}
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = DEFAULT_PORT
-	}
+	log.Println("Running server on port :", port)
+	serverStarted = time.Now()
 	router.Run(":" + port)
 }
 
 func main() {
-	serverStarted = time.Now()
-	log.Println("Setting up router")
-	setupRouter()
+	setupRouter(getPort())
 }
