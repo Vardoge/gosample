@@ -8,7 +8,7 @@ jobs:
       - image: synqfm/circleci:0.1.5
       - image: library/postgres:9.6.3
         environment:
-          POSTGRES_DB: go_test
+          POSTGRES_DB: gosample_test
           POSTGRES_USER: gotest
           POSTGRES_PASSWORD: gotest
     environment:
