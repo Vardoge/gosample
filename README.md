@@ -50,6 +50,11 @@ When you copy the workspace the first thing you should do is setup `circleci` an
 
 ### Setup your GitHub "protected" branch
 
+* Go to GitHub repo [settings](https://github.com/SYNQfm/gosample/settings) and [branches](https://github.com/SYNQfm/gosample/settings/branches)
+* Make `master` a protected branch
+* Check `Project Branch`, `Require status checks to pass before merging` and make sure `ci/circleci` is required.  Save your changes
+  * Note, coveralls won't show until you've ran a successful build with it so you can come back to make that required as well
+
 ### Things to change before you start using it
 
 * Go to `.circleci/config.yml` and 
