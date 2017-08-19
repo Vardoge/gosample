@@ -1,5 +1,5 @@
 [![CircleCI](https://circleci.com/gh/SYNQfm/gosample.svg?style=svg&circle-token=a16459f5ae854e258ed0876ab8c4d1fdb14c7679)](https://circleci.com/gh/SYNQfm/gosample)
-[![Coverage Status](https://coveralls.io/repos/github/SYNQfm/gosample/badge.svg?branch=master&1)](https://coveralls.io/github/SYNQfm/gosample?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/SYNQfm/gosample/badge.svg?branch=master)](https://coveralls.io/github/SYNQfm/gosample?branch=master)
 
 ### Go sample app to use for new repos
 
@@ -72,3 +72,4 @@ When you copy the workspace the first thing you should do is setup `circleci` an
 * Postgres
 * Govendor `go get -u github.com/kardianos/govendor`
 * CircleCi [cli](https://circleci.com/docs/2.0/local-jobs/)
+* Coveralls
