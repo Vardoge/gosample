@@ -1,7 +1,7 @@
 version: 2
 notify:
   webhooks:
-    - url: https://coveralls.io/webhook?repo_token=$COVERALLS_TOKEN
+    - url: https://coveralls.io/webhook?repo_token=${COVERALLS_TOKEN}
 jobs:
   build:
     docker:
@@ -14,6 +14,8 @@ jobs:
     environment:
       REPO: "gosample"
       SYNQ_DIR: "/go/src/github.com/SYNQfm"
+      PG_USER: "gotest"
+      PG_DB: "gosample_test"
     working_directory: /go/src/github.com/SYNQfm/gosample
     steps:
       - checkout
@@ -22,13 +24,13 @@ jobs:
           command: |
             for i in `seq 1 10`;
             do
-              psql -h localhost -U gotest go_test -c "\t" && echo DB Up && exit 0
+              psql -h localhost -U $PG_USER $PG_DB -c "\t" && echo DB Up && exit 0
               echo -n .
               sleep 1
             done
             echo Failed waiting for Postgres && exit 1
       - run:
-         name: Setup Obaku Database
+         name: Setup Database
          command: |
              cd sql/environments/test/
              flyway migrate
@@ -41,5 +43,9 @@ jobs:
       - run:
           name: Run Golang Tests
           command: |
-            GOPATH=$GOPATH:"${SYNQ_DIR}"/"${REPO}"/vendor overalls -project=github.com/SYNQfm/"${REPO}" -covermode=count -debug -ignore=.git,vendor,jobs,sql,sample -- -race -v
-            goveralls -coverprofile="${SYNQ_DIR}"/"${REPO}"/overalls.coverprofile -service circle-ci -repotoken "${COVERALLS_TOKEN}"
+            GOPATH=$GOPATH:"${SYNQ_DIR}"/"${REPO}"/vendor overalls -project=github.com/SYNQfm/"${REPO}" -covermode=count -debug -ignore=.git,.github,.circleci,vendor,sql,sample -- -race -v
+            if [ -z ${COVERALLS_TOKEN} ]; then
+              echo "coveralls token isn't set, skipping"
+            else
+              goveralls -coverprofile="${SYNQ_DIR}"/"${REPO}"/overalls.coverprofile -service circle-ci -repotoken "${COVERALLS_TOKEN}"
+            fi
