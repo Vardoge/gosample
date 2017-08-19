@@ -48,6 +48,8 @@ When you copy the workspace the first thing you should do is setup `circleci` an
 * Copy the Coveralls Badge and paste it into your README.md
 * Once yuou have some tests, go to the coveralls [Settings](https://coveralls.io/github/SYNQfm/gosample/settings) page and change the Coverage Threshold to minimum `75%` and Decrease threshold to `5%`
 
+### Setup your GitHub "protected" branch
+
 ### Things to change before you start using it
 
 * Go to `.circleci/config.yml` and 
