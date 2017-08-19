@@ -51,16 +51,19 @@ func setupTest(t *testing.T) *require.Assertions {
 
 func testLaunchRouter() string {
 	port := "32187"
-	os.Setenv("PORT", port)
 	gin.SetMode(gin.TestMode)
-	go setupRouter()
+	go setupRouter(port)
 	return port
 }
 
 func TestSave(t *testing.T) {
 	assert := setupTest(t)
-	call := ApiCall{VideoId: "123", Called: time.Now()}
+	call := ApiCall{}
 	err := call.Save()
+	assert.NotNil(err)
+	assert.Equal("missing video id, can not save job", err.Error())
+	call = ApiCall{VideoId: "123", Called: time.Now()}
+	err = call.Save()
 	assert.Nil(err)
 	calls := []ApiCall{}
 	e := db.Select(&calls, "select * from api_calls where true")
@@ -68,11 +71,28 @@ func TestSave(t *testing.T) {
 	assert.Len(calls, 1)
 	assert.Equal(call.VideoId, calls[0].VideoId)
 	layout := "2006-01-02 03:04:05"
+	assert.Equal("", calls[0].Type)
 	assert.Equal(call.Called.UTC().Format(layout), calls[0].Called.UTC().Format(layout))
+	call.Type = "details"
+	call.Id = calls[0].Id
+	err = call.Save()
+	assert.Nil(err)
+	calls = []ApiCall{}
+	e = db.Select(&calls, "select * from api_calls where true")
+	assert.Len(calls, 1)
+	assert.Equal("details", calls[0].Type)
 }
 
 func TestCall(t *testing.T) {
-
+	assert := setupTest(t)
+	call := ApiCall{}
+	err := call.Call()
+	assert.NotNil(err)
+	assert.Equal("Invalid uuid. Example: '1c0e3ea4529011e6991554a050defa20'.", err.Error())
+	call.VideoId = test_helper.VIDEO_ID
+	err = call.Call()
+	assert.Nil(err)
+	assert.Equal("/v1/video/details", call.Type)
 }
 
 func TestGetCalls(t *testing.T) {
@@ -84,6 +104,10 @@ func TestGetCalls(t *testing.T) {
 	calls, err = getCalls()
 	assert.Nil(err)
 	assert.Len(calls, len(testCalls))
+	calls, err = getCalls(testCalls[0].VideoId)
+	assert.Nil(err)
+	assert.Len(calls, 1)
+	assert.Equal(calls[0].VideoId, testCalls[0].VideoId)
 }
 
 func TestDetails(t *testing.T) {
@@ -183,9 +207,19 @@ func TestSetupRouter(t *testing.T) {
 	assert.Equal(200, resp.StatusCode)
 }
 
+func TestGetPort(t *testing.T) {
+	assert := assert.New(t)
+	assert.Equal(DEFAULT_PORT, getPort())
+	os.Setenv("PORT", "1234")
+	defer os.Unsetenv("PORT")
+	assert.Equal("1234", getPort())
+}
+
 func TestParseDbUrl(t *testing.T) {
 	assert := assert.New(t)
 	name := parseDatabaseUrl("")
+	assert.Equal("", name)
+	name = parseDatabaseUrl("://abcd")
 	assert.Equal("", name)
 	name = parseDatabaseUrl("postgres://user:password@host.com:5432/dbname")
 	assert.Equal("host=host.com port=5432 dbname=dbname user=user password=password", name)
@@ -193,4 +227,12 @@ func TestParseDbUrl(t *testing.T) {
 	assert.Equal("host=host.com port=5432 dbname=dbname user=user password=password sslmode=disable", name)
 	name = parseDatabaseUrl(DEFAULT_DB_URL)
 	assert.Equal("host=localhost port=5432 dbname=gosample_test user=gotest password=gotest sslmode=disable", name)
+}
+
+func TestMain(t *testing.T) {
+	assert := assert.New(t)
+	go main()
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/v1/status", DEFAULT_PORT))
+	assert.Nil(err)
+	assert.Equal(200, resp.StatusCode)
 }
