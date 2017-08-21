@@ -1,0 +1,5 @@
+flyway.url=jdbc:postgresql://myserver.com:5432/mydatabase?sslmode=require
+flyway.schemas=public
+flyway.user=myuser
+flyway.password={{password}}
+flyway.locations=filesystem:../../migrations
