@@ -1,0 +1,30 @@
+#!/usr/bin/make -f
+
+export PATH := $(PATH):/opt/flyway
+
+TEMPLATES = ../../templates
+
+FLYWAY__PASSWORD=$(shell ansible-vault view secrets.json | jq -r .flyway.password)
+
+TARGETS=flyway.conf
+
+.PHONY: all
+all: $(TARGETS)
+
+flyway.conf: flyway.conf.in secrets.json
+	@sed \
+	    -e's@{{password}}@$(FLYWAY__PASSWORD)@' \
+	    $< > $@
+	chmod 600 $@
+
+.PHONY: migrate
+migrate: all
+	flyway migrate
+
+.PHONY: info
+info: all
+	flyway info
+
+.PHONY: clean
+clean:
+	$(RM) $(TARGETS)
