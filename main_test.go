@@ -164,7 +164,6 @@ func TestDetails(t *testing.T) {
 			assert.Len(reqs, 2)
 			assert.Len(vals, 2)
 		})
-
 }
 
 func TestStatus(t *testing.T) {

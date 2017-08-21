@@ -117,13 +117,13 @@ func (a *ApiCall) Call() error {
 	defer a.Save()
 	start := time.Now()
 	video, err := sApi.GetVideo(a.VideoId)
+	a.Taken = time.Since(start)
 	if err != nil {
 		a.Error = err.Error()
 		return err
 	}
 	a.Type = "/v1/video/details"
 	a.VideoId = video.Id
-	a.Taken = time.Since(start)
 	a.Video = video
 	return nil
 }
