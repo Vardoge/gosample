@@ -21,8 +21,8 @@ This workspace works!  You can check out the test by running
 If you want to run it locally, you need to setup the test database
 
 ```
-createuser -U <postgres admin> -h localhost -P -d gotest
-createdb -U gotest -h localhost gosample_test
+createuser -U <postgres admin> -h localhost -P -d circleci
+createdb -U circleci -h localhost gosample_test
 cd sql/environments/test && flyway migrate
 ```
 
