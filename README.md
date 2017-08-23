@@ -57,12 +57,10 @@ When you copy the workspace the first thing you should do is setup `circleci` an
 ### Things to change before you start using it
 
 * Go to `.circleci/config.yml` and 
-  * replace `gotest` with the user you want
   * replace `gosample_test` with the database you want
   * replace `gosample` with the name of your workspace
 * Go to `sql/environments/test/flywayconf`
-  * change the username/password for your app
-  * change the database
+  * replace `gosample_test` with database you want
 * Change the `sql/migrations/V000__Init.sql` with the table you want
 * And of course, change the code as needed, but this workspace starts at 100% code coverage so try to maintain high coverage!
 

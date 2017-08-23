@@ -22,7 +22,7 @@ var serverStarted time.Time
 
 const (
 	DEFAULT_PORT   = "41414"
-	DEFAULT_DB_URL = "postgres://gotest:gotest@localhost:5432/gosample_test?sslmode=disable"
+	DEFAULT_DB_URL = "postgres://circleci:circleci@localhost:5432/gosample_test?sslmode=disable"
 )
 
 type ApiCall struct {

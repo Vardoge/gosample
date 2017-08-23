@@ -9,12 +9,12 @@ jobs:
       - image: library/postgres:9.6.3
         environment:
           POSTGRES_DB: gosample_test
-          POSTGRES_USER: gotest
-          POSTGRES_PASSWORD: gotest
+          POSTGRES_USER: circleci
+          POSTGRES_PASSWORD: circleci
     environment:
       REPO: "gosample"
       SYNQ_DIR: "/go/src/github.com/SYNQfm"
-      PG_USER: "gotest"
+      PG_USER: "circleci"
       PG_DB: "gosample_test"
     working_directory: /go/src/github.com/SYNQfm/gosample
     steps:

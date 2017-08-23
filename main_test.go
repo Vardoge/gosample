@@ -246,7 +246,7 @@ func TestParseDbUrl(t *testing.T) {
 	name = parseDatabaseUrl("postgres://user:password@host.com:5432/dbname?sslmode=disable")
 	assert.Equal("host=host.com port=5432 dbname=dbname user=user password=password sslmode=disable", name)
 	name = parseDatabaseUrl(DEFAULT_DB_URL)
-	assert.Equal("host=localhost port=5432 dbname=gosample_test user=gotest password=gotest sslmode=disable", name)
+	assert.Equal("host=localhost port=5432 dbname=gosample_test user=cirleci password=circleci sslmode=disable", name)
 }
 
 func TestMain(t *testing.T) {
