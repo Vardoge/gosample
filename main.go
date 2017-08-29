@@ -142,7 +142,7 @@ func details(c *gin.Context) {
 	err := a.Call()
 	if err != nil {
 		c.JSON(400, gin.H{
-			"message": "failled to make api call : " + err.Error(),
+			"message": "failed to make api call : " + err.Error(),
 		})
 		return
 

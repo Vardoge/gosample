@@ -141,7 +141,7 @@ func TestDetails(t *testing.T) {
 			reqs, vals := test_helper.GetReqs()
 			assert.Len(reqs, 1)
 			assert.Len(vals, 1)
-			assert.Equal("failled to make api call : Invalid uuid. Example: '1c0e3ea4529011e6991554a050defa20'.", resp["message"])
+			assert.Equal("failed to make api call : Invalid uuid. Example: '1c0e3ea4529011e6991554a050defa20'.", resp["message"])
 		})
 	sApi.Key = key
 	type Resp struct {
